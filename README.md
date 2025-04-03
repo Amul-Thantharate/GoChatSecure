@@ -1,131 +1,168 @@
 # GoChatSecure 🔒💬
 
-A secure, real-time chat application built with Go, featuring WebSockets, JWT authentication, and TLS encryption.
+[![Go Reference](https://pkg.go.dev/badge/github.com/gorilla/websocket.svg)](https://pkg.go.dev/github.com/gorilla/websocket)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![WebSocket](https://img.shields.io/badge/WebSocket-Enabled-brightgreen.svg)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+
+## 🌐 Overview
+
+GoChatSecure is a robust and scalable chat application that leverages the power of Go's concurrency model and the efficiency of WebSockets to provide a seamless real-time communication experience. It's designed with security in mind, utilizing TLS encryption and JWT authentication to ensure that all interactions are private and secure. This project is perfect for developers looking to understand and implement secure, real-time communication systems.
+
+[Quick Links](#quick-links) | [Features](#features) | [Installation](#installation) | [Usage](#usage) | [API](#api-documentation)
+
+## 📋 Quick Links
+- [Demo](#) (Coming soon!)
+- [Documentation](#api-documentation)
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
 
 ## 🌟 Features
 
-- **Secure Communication** 🛡️ - TLS encryption for all connections
-- **User Authentication** 🔑 - JWT-based authentication system
-- **Real-time Messaging** ⚡ - WebSocket-based instant messaging
-- **Chat Rooms** 🚪 - Support for multiple chat rooms
-- **Private Messaging** 📨 - Direct messaging between users with @username syntax
-- **Message History** 📜 - Stores recent messages for each room
+- **Secure Communication** 🛡️
+  - TLS encryption for all connections
+  - JWT-based authentication
+  - Secure WebSocket protocol (wss://)
 
-## 🚀 Getting Started
+- **Real-time Features** ⚡
+  - Instant messaging using WebSockets
+  - Multiple chat room support
+  - Private messaging with @username syntax
+  - Message history retention
+
+- **Developer Friendly** 🔧
+  - Comprehensive test suite
+  - Makefile automation
+  - Cross-platform support
+  - Docker support (coming soon)
+
+## 🚀 Installation
 
 ### Prerequisites
 
-- Go 1.16 or higher
-- SSL certificate and key for TLS encryption
+- Go 1.16+ 
+- OpenSSL (for certificate generation)
+- Make (optional, for build automation)
 
-### Installation
+### Quick Start
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/GoChatSecure.git
-   cd GoChatSecure
-   ```
-
-2. Generate SSL certificates (for development):
-   ```bash
-   openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -days 365 -nodes
-   ```
-
-3. Build the application:
-   ```bash
-   go build -o gochatsecure
-   ```
-
-### Running the Server
-
-Start the server with default settings:
 ```bash
-./gochatsecure
+# Clone the repository
+git clone https://github.com/Amul-Thantharate/GoChatSecure.git
+
+# Navigate to project directory
+cd GoChatSecure
+
+# Install dependencies
+go mod tidy
+
+# Generate certificates
+make generate-certs
+
+# Build and run
+make run
 ```
 
-With custom settings:
+## 💻 Usage
+
+### Command Line Flags
+
 ```bash
-./gochatsecure -addr=0.0.0.0:8443 -cert=path/to/cert.crt -key=path/to/key.key
+./gochat \
+  -addr=localhost:8080 \    # Server address (default)
+  -cert=server.crt \        # TLS certificate path
+  -key=server.key          # TLS key path
 ```
 
-## 🔧 Configuration
+### Client Authentication
 
-The server accepts the following command-line flags:
+```bash
+# Get JWT token
+curl -k https://localhost:8080/auth?username=yourname
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `-addr` | `localhost:8080` | Server address and port |
-| `-cert` | `server.crt` | Path to SSL certificate file |
-| `-key` | `server.key` | Path to SSL key file |
-
-## 📝 API Documentation
-
-### Authentication
-
-**Endpoint**: `/auth`  
-**Method**: GET  
-**Parameters**: `username` - The username to authenticate  
-**Response**: JSON containing a JWT token
-
-Example:
-```
-GET https://localhost:8080/auth?username=john
+# Connect to WebSocket (using token)
+wscat -c "wss://localhost:8080/ws?token=YOUR_JWT_TOKEN&room=general"
 ```
 
-Response:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+### Chat Commands
+
+```
+# Regular message
+Hello everyone!
+
+# Private message
+@john Hey, how are you?
+
+# Join different room
+/join room_name (Coming soon)
 ```
 
-### WebSocket Connection
+## 🔧 Development
 
-**Endpoint**: `/ws`  
-**Parameters**:
-- `token` - JWT token obtained from the auth endpoint
-- `room` (optional) - Chat room to join (defaults to "default")
+### Build Commands
 
-Example:
-```
-wss://localhost:8080/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&room=general
-```
+```bash
+# Run tests
+make test
 
-## 💬 Chat Commands
+# Development build with race detection
+make race
 
-- **Regular message**: Type your message and press enter to send to everyone in the room
-- **Private message**: Start your message with `@username ` to send a private message
-
-Example:
-```
-@john Hey, how are you doing?
+# Cross-platform builds
+make build-all      # Build for all platforms
+make build-linux    # Linux only
+make build-windows  # Windows only
+make build-mac      # macOS only
 ```
 
-## 🔐 Security Considerations
+### Project Structure
 
-- The default implementation uses a hardcoded secret key (`supersecretkey`). In production, you should use a strong, environment-specific secret.
-- TLS certificates should be properly managed and renewed in a production environment.
-- Consider implementing rate limiting to prevent abuse.
+```
+GoChatSecure/
+├── main.go           # Server entry point
+├── main_test.go      # Test suite
+├── go.mod           # Go modules file
+├── go.sum           # Module checksums
+├── Makefile         # Build automation
+├── server.crt       # TLS certificate
+├── server.key       # TLS private key
+└── README.md        # This file
+```
 
-## 🏗️ Architecture
+## 📚 API Documentation
 
-GoChatSecure uses a simple but effective architecture:
+### REST Endpoints
 
-- **WebSockets** for bidirectional communication
-- **Goroutines** for concurrent handling of connections and messages
-- **Channels** for thread-safe message broadcasting
-- **JWT** for stateless authentication
-- **Mutex** for safe access to shared resources
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/auth`  | GET    | Authenticate and get JWT |
+| `/ws`    | GET    | WebSocket connection |
+
+### WebSocket Events
+
+| Event | Description |
+|-------|-------------|
+| `message` | Regular chat message |
+| `private` | Private message |
+| `join`    | User joined notification |
+| `leave`   | User left notification |
+
+## 🔐 Security
+
+- TLS 1.3+ required for all connections
+- JWT tokens expire after 24 hours
+- Message sanitization
+- Rate limiting (coming soon)
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- [Gorilla WebSocket](https://github.com/gorilla/websocket) for the WebSocket implementation
-- [golang-jwt](https://github.com/golang-jwt/jwt) for JWT authentication
+- [Gorilla WebSocket](https://github.com/gorilla/websocket) - WebSocket implementation
+- [golang-jwt](https://github.com/golang-jwt/jwt) - JWT authentication
+- [OpenSSL](https://www.openssl.org/) - TLS certificate generation
